@@ -1,6 +1,6 @@
 const { Request, Response } = require('express');
 const Product = require('../Models/Productos');
-
+const moment = require('moment');
 // Crear un nuevo producto
 exports.createProduct = async (req, res) => {
   try {
