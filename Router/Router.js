@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const storage = multer.memoryStorage();
 const productosController = require('../Controllers/productosController');
 const upload = multer({ storage }).single('imagencita');
 router.post('/crear', upload,productosController.createProduct);
