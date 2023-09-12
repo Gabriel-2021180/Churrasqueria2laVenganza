@@ -6,7 +6,7 @@ const { createProduct, getActiveProducts, getInactiveProducts, editProduct, deac
 const upload = multer({ storage }).single('imagencita');
 router.post('/crear', upload,createProduct);
 router.get('/activos', getActiveProducts);
-router.get('producto',getProduct)
+router.get('producto/:id',getProduct)
 router.get('/inactivos', getInactiveProducts);
 router.put('/editar/:id', editProduct);
 router.put('/desactivar/:id', deactivateProduct);
