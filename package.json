@@ -7,8 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
-  "node": ">=14.20.1"
-},
+    "node": ">=14.20.1"
+  },
   "author": "los capos del perico",
   "license": "ISC",
   "dependencies": {

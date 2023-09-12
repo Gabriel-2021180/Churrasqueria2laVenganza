@@ -7,6 +7,7 @@ const productSchema = new Schema({
   descripcion: { type: String, required: true },
   precio: { type: Number, required: true },
   estado: { type: Boolean, required: true, default: true },
+  imagen:{ type: String, required: true }
 });
 
 const Product = model('Product', productSchema);

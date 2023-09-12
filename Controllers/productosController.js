@@ -1,11 +1,17 @@
 const { Request, Response } = require('express');
 const Product = require('../Models/Productos');
+const { Storage } = require('@google-cloud/storage');
+const storage = new Storage({ keyFilename: "googleimage.json" });
 
+const moment = require('moment');
 // Crear un nuevo producto
 exports.createProduct = async (req, res) => {
   try {
     const { nombre, descripcion, precio } = req.body;
-    const newProduct = await Product.create({ nombre, descripcion, precio });
+    console.log("estos son los datos",nombre,descripcion,precio,req.file)
+    const imagen = await uploadFile(req.file);
+    console.log("estos son los datos",nombre,descripcion,precio,imagen)
+    const newProduct = await Product.create({ nombre, descripcion, precio,imagen});
     console.log("los datos son"+newProduct)
     res.status(201).json({ message: 'Producto creado exitosamente', product: newProduct });
   } catch (error) {
@@ -80,3 +86,26 @@ exports.deactivateProduct = async (req, res) => {
     res.status(500).json({ error: 'Error al desactivar el producto' });
   }
 };
+// subir imagenes a google cloud storage
+async function uploadFile(file) {
+  const now = moment().format('YYYYMMDD_HHmmss');
+  const bucket = storage.bucket('primerstorage');
+  const fileName = `${now}_${file.originalname}`;
+  const fileUpload = bucket.file(fileName);
+  const stream = fileUpload.createWriteStream({
+      resumable: false,
+      public: true,
+      metadata: {
+          contentType: file.mimetype,
+      },
+  });
+
+  return new Promise((resolve, reject) => {
+      stream.on('error', reject);
+      stream.on('finish', () => {
+          const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileUpload.name}`;
+          resolve(publicUrl);
+      });
+      stream.end(file.buffer);
+  });
+}
