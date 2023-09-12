@@ -4,7 +4,8 @@
   "description": "java ps perro",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev":"nodemon app"
   },
   "engines": {
     "node": ">=14.20.1"

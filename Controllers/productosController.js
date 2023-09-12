@@ -65,6 +65,17 @@ exports.editProduct = async (req, res) => {
   }
 };
 
+exports.getProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findById(id);
+    res.status(200).json(product);
+  } catch (error) {
+    console.error('Error al obtener el producto:', error);
+    res.status(500).json({ error: 'Error al obtener el producto' });
+  }
+}
+
 // Desactivar un producto (cambiar estado a inactivo)
 exports.deactivateProduct = async (req, res) => {
   try {
@@ -99,6 +110,7 @@ async function uploadFile(file) {
           contentType: file.mimetype,
       },
   });
+
 
   return new Promise((resolve, reject) => {
       stream.on('error', reject);
