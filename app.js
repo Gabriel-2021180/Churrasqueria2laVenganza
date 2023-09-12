@@ -5,7 +5,7 @@ const flash = require('connect-flash');
 const AdminRouter = require('./Router/Router');
 const db = require('./db/conexion');
 
-
+const cors = require('cors');
 const { body, validationResult } = require('express-validator');
 const app = express();
 require('dotenv').config();
@@ -15,7 +15,7 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-
+app.use(cors());
 // Configurar express-session
 app.use(session({
   secret: '1235asdesas',
@@ -52,6 +52,6 @@ app.use(express.static('public'));
 app.use('/', AdminRouter);
 
 // Iniciar servidor
-app.listen(3000, () => {
-  console.log('server UP! en http://localhost:3000');
+app.listen(4000, () => {
+  console.log('server UP! en http://localhost:4000');
 });
