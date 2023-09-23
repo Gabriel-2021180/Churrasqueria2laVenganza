@@ -8,11 +8,11 @@ const moment = require('moment');
 exports.createProduct = async (req, res) => {
   try {
     const { nombre, descripcion, precio } = req.body;
-    console.log("estos son los datos",nombre,descripcion,precio,req.file)
+    
     const imagen = await uploadFile(req.file);
-    console.log("estos son los datos",nombre,descripcion,precio,imagen)
+    
     const newProduct = await Product.create({ nombre, descripcion, precio,imagen});
-    console.log("los datos son"+newProduct)
+    
     res.status(201).json({ message: 'Producto creado exitosamente', product: newProduct });
   } catch (error) {
     console.error('Error al crear el producto:', error);
@@ -45,8 +45,7 @@ exports.getInactiveProducts = async (req, res) => {
 
 // Editar un producto existente, incluyendo la imagen
 exports.editProduct = async (req, res) => {
-  console.log('Los datos recibidos son:', req.body);
-  console.log('Los datos recibidos de la imagen son:', req.file);
+  
 
   try {
     const { id } = req.params;
@@ -62,7 +61,7 @@ exports.editProduct = async (req, res) => {
 
     // Extrae el nombre del archivo de la URL de la imagen anterior
     const nombreImagenAnterior = imagenAnteriorUrl.substring(imagenAnteriorUrl.lastIndexOf('/') + 1);
-    console.log("el nombre de la imagen anterior es: " + nombreImagenAnterior)
+    
     
     // Si el usuario no sube una nueva imagen, no actualizamos la imagen
     if (nuevaImagen) {
