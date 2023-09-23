@@ -2,7 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const flash = require('connect-flash');
-const AdminRouter = require('./Router/Router');
+const AdminRouter = require('../src/Router/Router');
 const db = require('./db/conexion');
 
 const cors = require('cors');
