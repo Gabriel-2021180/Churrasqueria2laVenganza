@@ -42,34 +42,68 @@ exports.getInactiveProducts = async (req, res) => {
   }
 };
 
-// Editar un producto existente
+
+// Editar un producto existente, incluyendo la imagen
 exports.editProduct = async (req, res) => {
+  console.log('Los datos recibidos son:', req.body);
+  console.log('Los datos recibidos de la imagen son:', req.file);
+
   try {
     const { id } = req.params;
-    const { nombre, descripcion, precio } = req.body;
-    
-    const updatedProduct = await Product.findByIdAndUpdate(
-      id,
-      { nombre, descripcion, precio },
-      { new: true }
-    );
+    const { nombre, descripcion, precio, nuevaImagen } = req.body;
 
-    if (!updatedProduct) {
+    // Obtén la URL de la imagen anterior de la base de datos
+    const existingProduct = await Product.findById(id);
+    if (!existingProduct) {
       return res.status(404).json({ message: 'Producto no encontrado' });
     }
 
-    res.status(200).json({ message: 'Producto editado exitosamente', product: updatedProduct });
+    const imagenAnteriorUrl = existingProduct.imagen;
+
+    // Extrae el nombre del archivo de la URL de la imagen anterior
+    const nombreImagenAnterior = imagenAnteriorUrl.substring(imagenAnteriorUrl.lastIndexOf('/') + 1);
+    console.log("el nombre de la imagen anterior es: " + nombreImagenAnterior)
+    
+    // Si el usuario no sube una nueva imagen, no actualizamos la imagen
+    if (nuevaImagen) {
+      // Reemplaza la imagen en Google Cloud Storage y obtén la URL de la nueva imagen
+      const nuevaImagenUrl = await reemplazarImagenEnStorage(req.file, nombreImagenAnterior);
+
+      // Actualiza los campos del producto, incluyendo la nueva URL de la imagen
+      const updatedProduct = await Product.findByIdAndUpdate(
+        id,
+        { nombre, descripcion, precio, imagen: nuevaImagenUrl },
+        { new: true }
+      );
+
+      res.status(200).json({ message: 'Producto editado'});
+    } else {
+      // No se ha proporcionado una nueva imagen, por lo que no se actualiza la imagen del producto
+      const updatedProduct = await Product.findByIdAndUpdate(
+        id,
+        { nombre, descripcion, precio },
+        { new: true }
+      );
+      res.status(200).json({ message: 'Producto editado' });
+    }
   } catch (error) {
     console.error('Error al editar el producto:', error);
     res.status(500).json({ error: 'Error al editar el producto' });
   }
 };
 
+
+
+
+
+
+
+
 // Desactivar un producto (cambiar estado a inactivo)
 exports.deactivateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const deactivatedProduct = await Product.findByIdAndUpdate(
       id,
       { estado: false },
@@ -86,6 +120,24 @@ exports.deactivateProduct = async (req, res) => {
     res.status(500).json({ error: 'Error al desactivar el producto' });
   }
 };
+//fats para la peticion de ajax perro maldito mauro 
+// Obtener detalles de un producto por ID
+exports.getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    res.status(200).json({ product });
+  } catch (error) {
+    console.error('Error al obtener los detalles del producto:', error);
+    res.status(500).json({ error: 'Error al obtener los detalles del producto' });
+  }
+};
+
 // subir imagenes a google cloud storage
 async function uploadFile(file) {
   const now = moment().format('YYYYMMDD_HHmmss');
@@ -109,3 +161,27 @@ async function uploadFile(file) {
       stream.end(file.buffer);
   });
 }
+
+// Reemplaza la imagen en Google Cloud Storage
+async function reemplazarImagenEnStorage(file, nombreImagenAnterior) {
+  const bucket = storage.bucket('primerstorage');
+
+  // Verificamos si el nombre de la imagen anterior existe en el Cloud Storage
+  const blob = await bucket.file(nombreImagenAnterior).get();
+
+  // Si el nombre de la imagen anterior existe en el Cloud Storage, la borramos
+  if (blob) {
+    await bucket.file(nombreImagenAnterior).delete();
+  }
+
+  // Subimos la nueva imagen
+  const nuevaImagenUrl = await uploadFile(file);
+
+  // Obtenemos el nombre del archivo de la nueva imagen
+  const nombreImagenNueva = nuevaImagenUrl
+
+  return nombreImagenNueva;
+}
+
+
+
