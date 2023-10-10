@@ -1,5 +1,6 @@
 const { Request, Response } = require('express');
 const Product = require('../Models/Productos');
+const Categoria = require('../Models/Categorias');
 const { Storage } = require('@google-cloud/storage');
 const storage = new Storage({ keyFilename: "googleimage.json" });
 
@@ -7,12 +8,29 @@ const moment = require('moment');
 // Crear un nuevo producto
 exports.createProduct = async (req, res) => {
   try {
-    const { nombre, descripcion, precio } = req.body;
-    
+    const { nombre, descripcion, precio, categoriaId } = req.body;
+
+    // Primero, verifica si la categoría con el ID proporcionado existe
+    const categoria = await Categoria.findById(categoriaId);
+    if (!categoria) {
+      return res.status(400).json({ error: 'La categoría especificada no existe' });
+    }
+
+    // Luego, crea el producto y asocia la categoría
     const imagen = await uploadFile(req.file);
-    
-    const newProduct = await Product.create({ nombre, descripcion, precio,imagen});
-    
+    const newProduct = await Product.create({
+      nombre,
+      descripcion,
+      precio,
+      imagen,
+      categoria: {
+        _id: categoriaId,
+      },
+    });
+
+    // Actualiza la categoría con el nuevo producto
+    const updatedCategoria = await Categoria.updateOne({ _id: categoriaId }, { $push: { productos: newProduct._id } });
+
     res.status(201).json({ message: 'Producto creado exitosamente', product: newProduct });
   } catch (error) {
     console.error('Error al crear el producto:', error);
